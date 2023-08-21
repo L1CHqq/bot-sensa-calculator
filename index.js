@@ -114,8 +114,8 @@ bot.on('message', async msg => {
                     await bot.sendMessage(chatId,  'Отлично, мы ввели все данные, давай их проверим:' +
                     '\n' + '\n' + 'Ваш FOV от третьего лица в игре = ' + fov + 
                     '\n' + '\n' + 'Ваш FOV от первого лица в игре = ' + fovOne + 
-                    '\n' + '\n' + 'Ваша чуствительность калиматора на пальце = ' + sensitivity + 
-                    '\n' + '\n' + 'Ваша чуствительность калиматора на гироскопе = ' + sensitivityGyro +
+                    '\n' + '\n' + 'Ваша чуствительность коллиматора на пальце = ' + sensitivity + 
+                    '\n' + '\n' + 'Ваша чуствительность коллиматора на гироскопе = ' + sensitivityGyro +
                     '\n' + '\n' + 'Все верно?', keyboard)
                     }
                 }
@@ -167,7 +167,7 @@ bot.on('callback_query', async msg => {   // Обработчик для кно�
             await bot.sendMessage(chatId,  'Значения чувствительности на наводку пальцем' +  
             '\n' + '\n' + 'Камера третьего лица = ' + Scope_In_Tpp_Min +  
             '\n' + 'Камера первого лица = ' + Scope_In_Fpp_Min + 
-            '\n' + 'Калиматор = ' + Multiplication_For_The_Camera[0] + 
+            '\n' + 'Коллиматор = ' + Multiplication_For_The_Camera[0] + 
             '\n' + '2x = ' + Multiplication_For_The_Camera[1] +
             '\n' + '3x = ' + Multiplication_For_The_Camera[2] +
             '\n' + '4x = ' + Multiplication_For_The_Camera[3] +
@@ -178,7 +178,7 @@ bot.on('callback_query', async msg => {   // Обработчик для кно�
             await bot.sendMessage(chatId,  'Значения чувствительности гироскопа' +  
             '\n' + '\n' + 'Камера третьего лица = ' + Gyroscope_In_Tpp +  
             '\n' + 'Камера первого лица = ' + Gyroscope_In_Fpp + 
-            '\n' + 'Калиматор = ' + Multiplication_For_The_Camera_Gyro[0] + 
+            '\n' + 'Коллиматор = ' + Multiplication_For_The_Camera_Gyro[0] + 
             '\n' + '2x = ' + Multiplication_For_The_Camera_Gyro[1] +
             '\n' + '3x = ' + Multiplication_For_The_Camera_Gyro[2] +
             '\n' + '4x = ' + Multiplication_For_The_Camera_Gyro[3] +
