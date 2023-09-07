@@ -1,5 +1,5 @@
 const TelegramApi = require('node-telegram-bot-api');
-const token = '5813276923:AAHib1X8sW3shPx6kpfOQ_-pS4Z3HVFSsWc';
+const token = '6481401676:AAH7pq7MEIHtpM-e-z_jyxL3syenBBcmYbY';
 
 const bot = new TelegramApi(token, { polling: true });
 
@@ -208,7 +208,7 @@ bot.on('callback_query', async msg => {   // Обработчик для кно�
         
     } else {
         if (data === '/GOTOVO') {
-            const chatMember = await bot.getChatMember('@podsos_l1ch', chatId);
+            const chatMember = await bot.getChatMember('@noteiam', chatId);
     
             if (chatMember && ['member', 'administrator', 'creator'].includes(chatMember.status)) {
                 userStates[chatId] = { step: 'fov_third_person' };
