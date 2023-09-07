@@ -1,59 +1,76 @@
 const TelegramApi = require('node-telegram-bot-api');
-
 const token = '5813276923:AAHib1X8sW3shPx6kpfOQ_-pS4Z3HVFSsWc';
 
-const bot = new TelegramApi(token, {polling: true});
+const bot = new TelegramApi(token, { polling: true });
 
-const {keyboardREV, keyboardREP, keyboardSTART, keyboard, keyboardGOTOVO} = require('./options')
+const { keyboardREV, keyboardREP, keyboardSTART, keyboard, keyboardGOTOVO } = require('./options');
 
-
-
-
-
-let fov 
-let fovOne 
-let sensitivity
-let sensitivityGyro
-
-let userData 
-
-
-
-
-
+const sequelize = require('./db');
+const UserModel = require('./models');
 
 const photoPath = 'https://imgur.com/a/Sj6NKwY';
-const jpgFOV_ONE = 'https://imgur.com/a/66BBvjb'
-const jpgSens = 'https://imgur.com/a/Sm6I2Z3'
-const jpgGyro = 'https://imgur.com/a/8ixJJcg'
-
+const jpgFOV_ONE = 'https://imgur.com/a/66BBvjb';
+const jpgSens = 'https://imgur.com/a/Sm6I2Z3';
+const jpgGyro = 'https://imgur.com/a/8ixJJcg';
 
 const userStates = {};
 
+const ADMIN_USER_ID = 1069237957;
+const noteiammm_ID = 1254686047;
+const note_uc_ID = 5855215558;
 
 
 
-
-
-bot.on('message', async msg => {
+// Обработка команды /sendall
+bot.onText(/\/sendall/, (msg) => {
+    const chatId = msg.chat.id;
+    if (msg.from.id === ADMIN_USER_ID || msg.from.id === noteiammm_ID || msg.from.id === note_uc_ID ) {
+      bot.sendMessage(chatId, 'Введите текст для рассылки:');
+      bot.once('text', (message) => {
+        sendToAllUsers(message.text);
+        bot.sendMessage(chatId, 'Сообщение успешно отправлено всем пользователям.');
+      });
+    } else {
+      bot.sendMessage(chatId, 'У вас нет доступа к этой команде.');
+    }
+  });
+  
+  // Функция для рассылки сообщения всем пользователям
+  async function sendToAllUsers(message) {
+    try {
+      const users = await UserModel.findAll();
+      for (const user of users) {
+        await bot.sendMessage(user.chatId, message);
+        console.log('Сообщение успешно отправлено пользователю:', user.chatId);
+      }
+    } catch (error) {
+      console.error('Ошибка при рассылке сообщения:', error);
+    }
+  }
+  
+  bot.on('message', async (msg) => {
     const text = msg.text;
     const chatId = msg.chat.id;
-
-
-
+  
     if (text === '/start') {
-        userStates[chatId] = { step: 'startDialog' };
-        await bot.sendMessage(chatId, 'Привет, этот бот поможет тебе настроить сенсу👀');
+      userStates[chatId] = { step: 'startDialog' };
+      await bot.sendMessage(chatId, 'Привет, этот бот поможет тебе настроить сенсу👀');
     }
-
+  
     const state = userStates[chatId];
-
+  
     if (state) {
-        switch (state.step) {
-            case 'startDialog': 
-                await bot.sendMessage(chatId, 'Для начала подпишись на канал создателя: @noteiam', keyboardGOTOVO) 
-
-                break;
+      switch (state.step) {
+        case 'startDialog':
+            await sequelize.authenticate();
+            await sequelize.sync();
+            // Проверка наличия пользователя в базе данных
+            const existingUser = await UserModel.findOne({ where: { chatId: chatId.toString() } });
+            if (!existingUser) {
+              await UserModel.create({ chatId });
+            }
+            await bot.sendMessage(chatId, 'Для начала подпишись на канал создателя: @noteiam', keyboardGOTOVO);
+          break;
             
             case 'start':
                 userStates[chatId].step = 'fov_third_person';
@@ -114,8 +131,8 @@ bot.on('message', async msg => {
                     await bot.sendMessage(chatId,  'Отлично, мы ввели все данные, давай их проверим:' +
                     '\n' + '\n' + 'Ваш FOV от третьего лица в игре = ' + fov + 
                     '\n' + '\n' + 'Ваш FOV от первого лица в игре = ' + fovOne + 
-                    '\n' + '\n' + 'Ваша чуствительность коллиматора на пальце = ' + sensitivity + 
-                    '\n' + '\n' + 'Ваша чуствительность коллиматора на гироскопе = ' + sensitivityGyro +
+                    '\n' + '\n' + 'Ваша чуствительность калиматора на пальце = ' + sensitivity + 
+                    '\n' + '\n' + 'Ваша чуствительность калиматора на гироскопе = ' + sensitivityGyro +
                     '\n' + '\n' + 'Все верно?', keyboard)
                     }
                 }
@@ -123,8 +140,7 @@ bot.on('message', async msg => {
 
             case 'completed':
                 if (text === '/QWERTY') {
-                    // Обработка команды /QWERTY и отправка значений пользователю
-                    // console.log(userData);
+
                 }
                 break;
 
@@ -144,7 +160,7 @@ bot.on('callback_query', async msg => {   // Обработчик для кно�
     const data = msg.data;
     const chatId = msg.message.chat.id;
 
-    if (data === '/start' || data === '/repeat' && userStates[chatId] && userStates[chatId].step === 'completed') {
+    if (data === '/NOOO' || data === '/repeat' && userStates[chatId] && userStates[chatId].step === 'completed') {
         userStates[chatId] = { step: 'fov_third_person' };
         await bot.sendMessage(chatId, 'Мишь, давай по новой');
         await bot.sendPhoto(chatId, photoPath, {caption: 'Введите ваш FOV от третьего лица'});
@@ -167,7 +183,7 @@ bot.on('callback_query', async msg => {   // Обработчик для кно�
             await bot.sendMessage(chatId,  'Значения чувствительности на наводку пальцем' +  
             '\n' + '\n' + 'Камера третьего лица = ' + Scope_In_Tpp_Min +  
             '\n' + 'Камера первого лица = ' + Scope_In_Fpp_Min + 
-            '\n' + 'Коллиматор = ' + Multiplication_For_The_Camera[0] + 
+            '\n' + 'Калиматор = ' + Multiplication_For_The_Camera[0] + 
             '\n' + '2x = ' + Multiplication_For_The_Camera[1] +
             '\n' + '3x = ' + Multiplication_For_The_Camera[2] +
             '\n' + '4x = ' + Multiplication_For_The_Camera[3] +
@@ -178,7 +194,7 @@ bot.on('callback_query', async msg => {   // Обработчик для кно�
             await bot.sendMessage(chatId,  'Значения чувствительности гироскопа' +  
             '\n' + '\n' + 'Камера третьего лица = ' + Gyroscope_In_Tpp +  
             '\n' + 'Камера первого лица = ' + Gyroscope_In_Fpp + 
-            '\n' + 'Коллиматор = ' + Multiplication_For_The_Camera_Gyro[0] + 
+            '\n' + 'Калиматор = ' + Multiplication_For_The_Camera_Gyro[0] + 
             '\n' + '2x = ' + Multiplication_For_The_Camera_Gyro[1] +
             '\n' + '3x = ' + Multiplication_For_The_Camera_Gyro[2] +
             '\n' + '4x = ' + Multiplication_For_The_Camera_Gyro[3] +
@@ -188,11 +204,7 @@ bot.on('callback_query', async msg => {   // Обработчик для кно�
             await bot.sendMessage(chatId, 'Приятного использования👀✌️' + 
             '\n' + '\n' + 'Рекомендуем сначала попробовать всё в полигоне.' +              
             '\n' + '\n' + 'Магазин UC от создателей бота: @UCyNOTE !')
-        }
-
-    // } else if (data === '/GOTOVO' && userStates[chatId] && userStates[chatId].step === 'startDialog'){
-        // userStates[chatId] = { step: 'fov_third_person' };
-        // await bot.sendPhoto(chatId, photoPath, {caption: 'Введите ваш FOV от третьего лица'});                     
+        }              
         
     } else {
         if (data === '/GOTOVO') {
@@ -201,6 +213,8 @@ bot.on('callback_query', async msg => {   // Обработчик для кно�
             if (chatMember && ['member', 'administrator', 'creator'].includes(chatMember.status)) {
                 userStates[chatId] = { step: 'fov_third_person' };
                 await bot.sendMessage(chatId, 'Теперь ты подписан на канал. Давай начнем настройку!');
+    
+            
                 await bot.sendPhoto(chatId, photoPath, {caption: 'Введите ваш FOV от третьего лица'});  
             } else {
                 await bot.sendMessage(chatId, 'Подпишитесь на канал, чтобы начать настройку.', keyboardGOTOVO);       
@@ -208,6 +222,8 @@ bot.on('callback_query', async msg => {   // Обработчик для кно�
         } 
     }  
 });
+
+
 
 
 
