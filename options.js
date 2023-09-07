@@ -26,7 +26,7 @@ module.exports = {
     keyboard: {
         reply_markup: JSON.stringify({
             inline_keyboard: [
-                [{text: 'ДА', callback_data: '/QWERTY'}, {text: 'НЕТ', callback_data: '/start'}],
+                [{text: 'ДА', callback_data: '/QWERTY'}, {text: 'НЕТ', callback_data: '/NOOO'}],
             ]
         })
     },
